@@ -565,9 +565,6 @@ erDiagram
    - Prevents race conditions
    - ACID compliance
 
----
-
-## AI Voice Assistant
 
 ---
 
