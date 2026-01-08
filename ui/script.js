@@ -98,6 +98,29 @@ const logAction = (action, status, details) => {
     logContainer.prepend(entry);
 };
 
+// --- Delete Functions ---
+window.deleteUser = async (id) => {
+    if (!confirm('Are you sure you want to delete this user?')) return;
+    const res = await api(`/users/${id}`, 'DELETE');
+    if (res.success) {
+        showToast(`User ${id} deleted`);
+        // Reload both lists as deleting user deletes wallets too
+        await loadUsers();
+        await loadWallets();
+    } else {
+        console.error("Delete User Failed:", res.error);
+    }
+};
+
+window.deleteWallet = async (id) => {
+    if (!confirm('Are you sure you want to delete this wallet?')) return;
+    const res = await api(`/wallets/${id}`, 'DELETE');
+    if (res.success) {
+        showToast(`Wallet ${id} deleted`);
+        await loadWallets();
+    }
+};
+
 // --- Data Loading Functions ---
 
 const loadUsers = async () => {
@@ -123,14 +146,18 @@ const updateUserUI = () => {
         if (users.length === 0) {
             list.innerHTML = '<li class="empty-state">No users found. Create one to get started.</li>';
         } else {
-            users.forEach(user => {
+            users.forEach((user, index) => {
                 const li = document.createElement('li');
                 li.innerHTML = `
                     <div style="display:flex; flex-direction:column;">
+                        <span style="font-weight:600; color:var(--primary-color);">#${index + 1}</span>
                         <span style="font-weight:500; color:white;">${user.username}</span>
                         <span style="font-size:0.8em; color:var(--text-secondary);">${user.email}</span>
                     </div>
-                    <span class="badge">ID: ${user.id}</span>
+                    <div style="display:flex; gap:10px; align-items:center;">
+                        <span class="badge">ID: ${user.id}</span>
+                        <button class="btn-text danger" onclick="deleteUser(${user.id})">Delete</button>
+                    </div>
                 `;
                 list.appendChild(li);
             });
@@ -178,22 +205,57 @@ const loadWallets = async () => {
     }
 
     list.innerHTML = '';
-    wallets.forEach(w => {
+    wallets.forEach((w, index) => {
         const li = document.createElement('li');
         const user = users.find(u => u.id === w.user_id);
         const userName = user ? user.username : `User ${w.user_id}`;
 
         li.innerHTML = `
             <div style="display:flex; flex-direction:column; cursor:pointer;" onclick="fillWalletId(${w.id})">
-                <span style="font-weight:600; color:var(--primary-color);">Wallet #${w.id}</span>
+                <span style="font-weight:600; color:var(--primary-color);">#${index + 1} &nbsp; Wallet ${w.id}</span>
                 <span style="font-size:0.8em; color:var(--text-secondary);">Owner: ${userName}</span>
             </div>
             <div style="display:flex; align-items:center; gap:10px;">
                 <span style="font-weight:bold; color:var(--success-color);">$${w.balance.toFixed(2)}</span>
                 <button class="btn-text" onclick="checkBalance(${w.id})">Refresh</button>
+                <button class="btn-text danger" onclick="deleteWallet(${w.id})">Delete</button>
             </div>
         `;
         list.appendChild(li);
+    });
+};
+
+window.loadTransactions = async () => {
+    const tableBody = document.getElementById('txnList');
+    if (!tableBody) return;
+
+    tableBody.innerHTML = '<tr><td colspan="5" style="padding:20px; text-align:center;">Loading...</td></tr>';
+
+    const res = await api('/transfer/history', 'GET');
+    if (!res.success) {
+        tableBody.innerHTML = '<tr><td colspan="5" style="padding:20px; text-align:center; color:var(--danger-color);">Failed to load logs.</td></tr>';
+        return;
+    }
+
+    const txns = res.data;
+    if (txns.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="5" style="padding:20px; text-align:center;">No transactions found.</td></tr>';
+        return;
+    }
+
+    tableBody.innerHTML = '';
+    txns.forEach(t => {
+        const date = new Date(t.timestamp).toLocaleString();
+        const row = document.createElement('tr');
+        row.style.borderBottom = '1px solid var(--border-color)';
+        row.innerHTML = `
+            <td style="padding:10px; color:var(--text-secondary);">#${t.id}</td>
+            <td style="padding:10px;">${date}</td>
+            <td style="padding:10px;">Wallet ${t.from_wallet_id}</td>
+            <td style="padding:10px;">Wallet ${t.to_wallet_id}</td>
+            <td style="padding:10px; font-weight:bold; color:var(--success-color);">$${t.amount.toFixed(2)}</td>
+        `;
+        tableBody.appendChild(row);
     });
 };
 
@@ -253,8 +315,10 @@ if (createWalletForm) {
         if (res.success) {
             showToast(`Wallet #${res.data.id} created successfully!`);
             e.target.reset();
-            // EXPLICIT REFRESH
-            await loadWallets();
+            // Wait slightly before reloading to ensure server consistency if async
+            setTimeout(() => loadWallets(), 100);
+        } else {
+            console.error("Wallet Creation Failed:", res.error);
         }
     });
 }
@@ -291,17 +355,91 @@ if (depositForm) {
 
 const transferForm = document.getElementById('transferForm');
 if (transferForm) {
+    // Toggle Logic
+    const raceToggle = document.getElementById('raceToggle');
+    const receiver2Group = document.getElementById('receiver2Group');
+
+    if (raceToggle) {
+        raceToggle.addEventListener('change', (e) => {
+            if (e.target.checked) {
+                receiver2Group.classList.remove('hidden');
+                document.querySelector('input[name="to_wallet_id_2"]').required = true;
+                document.getElementById('transferBtn').innerText = "💸 Run Payroll Batch";
+            } else {
+                receiver2Group.classList.add('hidden');
+                document.querySelector('input[name="to_wallet_id_2"]').required = false;
+                document.getElementById('transferBtn').innerText = "Transfer";
+            }
+        });
+    }
+
     transferForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const data = Object.fromEntries(new FormData(e.target));
-        data.from_wallet_id = parseInt(data.from_wallet_id);
-        data.to_wallet_id = parseInt(data.to_wallet_id);
-        data.amount = parseFloat(data.amount);
+        const amount = parseFloat(data.amount);
+        const fromId = parseInt(data.from_wallet_id);
+        const toId1 = parseInt(data.to_wallet_id);
 
-        const res = await api('/transfer/', 'POST', data);
-        if (res.success) {
-            showToast('Transfer completed successfully!');
-            e.target.reset();
+        // Validation for negative amount
+        if (amount <= 0) {
+            showToast('Amount must be positive!', 'error');
+            return;
+        }
+
+        // Validation: Self Transfer
+        if (fromId === toId1) {
+            showToast('Cannot transfer to self!', 'error');
+            return;
+        }
+
+        if (raceToggle && raceToggle.checked) {
+            // RACE CONDITION MODE
+            const toId2 = parseInt(data.to_wallet_id_2);
+
+            if (fromId === toId2) {
+                showToast('Cannot transfer to self (Receiver 2)!', 'error');
+                return;
+            }
+            if (toId1 === toId2) {
+                showToast('Receivers must be different for race test!', 'error');
+                return;
+            }
+            if (isNaN(toId2)) {
+                showToast('Receiver 2 ID is invalid', 'error');
+                return;
+            }
+
+            showToast('Processing Payroll Batch...', 'info');
+
+            // Construct Batch Payload
+            const batchPayload = {
+                from_wallet_id: fromId,
+                transfers: [
+                    { to_wallet_id: toId1, amount: amount },
+                    { to_wallet_id: toId2, amount: amount }
+                ]
+            };
+
+            const res = await api('/transfer/batch', 'POST', batchPayload);
+
+            if (res.success) {
+                showToast(`Payroll Success! Processed ${res.data.length} transactions.`, 'success');
+                e.target.reset();
+            } else {
+                showToast(`batch Failed: ${res.error.detail || 'Unknown error'}`, 'error');
+            }
+
+        } else {
+            // NORMAL MODE
+            const res = await api('/transfer/', 'POST', {
+                from_wallet_id: fromId,
+                to_wallet_id: toId1,
+                amount: amount
+            });
+            if (res.success) {
+                showToast('Transfer completed successfully!');
+                e.target.reset();
+            }
         }
     });
 }

@@ -39,3 +39,7 @@ async def read_transfer():
 @app.get("/balance")
 async def read_balance():
     return FileResponse('ui/balance.html')
+
+@app.get("/transactions")
+async def read_transactions_ui():
+    return FileResponse('ui/transactions.html')

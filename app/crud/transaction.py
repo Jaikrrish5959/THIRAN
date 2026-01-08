@@ -47,3 +47,52 @@ def create_transfer_vulnerable(db: Session, transaction: TransactionCreate):
     db.refresh(db_txn)
     
     return db_txn
+
+def create_batch_transfer(db: Session, batch: TransactionCreate): 
+    # Note: Type hint above is technically BatchTransferCreate but using dynamic for now or imported
+    # Actually let's just use the dict or object access.
+    
+    # 1. LOCK KEY SENDER
+    sender = db.query(Wallet).filter(Wallet.id == batch.from_wallet_id).with_for_update().first()
+    if not sender:
+        raise HTTPException(status_code=404, detail="Sender wallet not found")
+
+    if sender.status != WalletStatus.ACTIVE:
+         raise HTTPException(status_code=400, detail="Sender wallet inactive")
+
+    # 2. CALCULATE TOTAL
+    total_needed = sum(t.amount for t in batch.transfers)
+    
+    # 3. ATOMIC CHECK
+    if sender.balance < total_needed:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Insufficient funds for batch. Required: {total_needed}, Available: {sender.balance}"
+        )
+
+    # 4. EXECUTE ALL
+    processed_txns = []
+    
+    sender.balance -= total_needed
+    
+    for t in batch.transfers:
+        receiver = db.query(Wallet).filter(Wallet.id == t.to_wallet_id).first()
+        if not receiver:
+             # In a real system you might rollback, but here we error out
+             raise HTTPException(status_code=404, detail=f"Receiver {t.to_wallet_id} not found")
+        
+        receiver.balance += t.amount
+        
+        db_txn = Transaction(
+            from_wallet_id=batch.from_wallet_id,
+            to_wallet_id=t.to_wallet_id,
+            amount=t.amount
+        )
+        db.add(db_txn)
+        processed_txns.append(db_txn)
+        
+    db.commit()
+    return processed_txns
+
+def get_transactions(db: Session, skip: int = 0, limit: int = 100):
+    return db.query(Transaction).order_by(Transaction.timestamp.desc()).offset(skip).limit(limit).all()

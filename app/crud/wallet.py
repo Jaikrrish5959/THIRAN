@@ -22,3 +22,10 @@ def deposit_wallet(db: Session, wallet_id: int, amount: float):
         db.commit()
         db.refresh(wallet)
     return wallet
+
+def delete_wallet(db: Session, wallet_id: int):
+    wallet = get_wallet(db, wallet_id)
+    if wallet:
+        db.delete(wallet)
+        db.commit()
+    return wallet

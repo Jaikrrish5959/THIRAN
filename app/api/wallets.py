@@ -29,3 +29,10 @@ def deposit(wallet_id: int, deposit: wallet_schema.WalletDeposit, db: Session = 
     if not updated_wallet:
          raise HTTPException(status_code=404, detail="Wallet not found")
     return updated_wallet
+
+@router.delete("/{wallet_id}", response_model=wallet_schema.Wallet)
+def delete_wallet(wallet_id: int, db: Session = Depends(get_db)):
+    db_wallet = wallet_crud.delete_wallet(db, wallet_id)
+    if not db_wallet:
+        raise HTTPException(status_code=404, detail="Wallet not found")
+    return db_wallet

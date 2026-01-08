@@ -14,3 +14,12 @@ def create_user(db: Session, user: UserCreate):
 
 def get_users(db: Session, skip: int = 0, limit: int = 100):
     return db.query(User).offset(skip).limit(limit).all()
+
+def delete_user(db: Session, user_id: int):
+    user = db.query(User).filter(User.id == user_id).first()
+    if user:
+        # Also could delete related wallets if cascade is not set in models, 
+        # but for now simple delete
+        db.delete(user)
+        db.commit()
+    return user

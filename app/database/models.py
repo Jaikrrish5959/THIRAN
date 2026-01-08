@@ -15,7 +15,7 @@ class User(Base):
     username = Column(String, unique=True, index=True)
     email = Column(String, unique=True, index=True)
     
-    wallet = relationship("Wallet", back_populates="owner", uselist=False)
+    wallet = relationship("Wallet", back_populates="owner", uselist=False, cascade="all, delete-orphan")
 
 class Wallet(Base):
     __tablename__ = "wallets"
@@ -26,8 +26,8 @@ class Wallet(Base):
     status = Column(Enum(WalletStatus), default=WalletStatus.ACTIVE)
 
     owner = relationship("User", back_populates="wallet")
-    sent_transactions = relationship("Transaction", foreign_keys="Transaction.from_wallet_id")
-    received_transactions = relationship("Transaction", foreign_keys="Transaction.to_wallet_id")
+    sent_transactions = relationship("Transaction", foreign_keys="Transaction.from_wallet_id", cascade="all, delete-orphan")
+    received_transactions = relationship("Transaction", foreign_keys="Transaction.to_wallet_id", cascade="all, delete-orphan")
 
 class Transaction(Base):
     __tablename__ = "transactions"

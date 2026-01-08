@@ -275,6 +275,8 @@ button {
     padding: 0.25rem 0.5rem;
 }
 .btn-text:hover { color: var(--text-primary); }
+.btn-text.danger { color: var(--danger-color); }
+.btn-text.danger:hover { color: #dc2626; text-decoration: underline; }
 
 /* Helpers */
 .inline-form {

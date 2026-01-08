@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transaction Log | Wallet Engine</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+    <div id="toast-container"></div>
+    <nav class="navbar">
+        <a href="/" style="text-decoration: none; color: inherit;">
+            <div class="nav-brand">
+                <div class="logo-icon">W</div>
+                <h1>Wallet Engine</h1>
+            </div>
+        </a>
+        <div class="nav-links">
+            <a href="/users">Users</a>
+            <a href="/wallets">Wallets</a>
+            <a href="/deposit">Deposit</a>
+            <a href="/transfer">Transfer</a>
+            <a href="/transactions" class="active">Log Book</a>
+            <a href="/balance">Balance</a>
+            <a href="/docs" target="_blank">API Docs</a>
+            <button id="themeToggle" class="theme-toggle" aria-label="Toggle Theme"></button>
+        </div>
+    </nav>
+    <main class="container">
+        <div class="card">
+            <div class="card-header">
+                <h3>Transaction Log Book</h3>
+                <button class="btn-text" onclick="loadTransactions()">Refresh</button>
+            </div>
+            <div class="card-body">
+                <div class="table-container">
+                    <table style="width:100%; text-align:left; border-collapse:collapse;">
+                        <thead>
+                            <tr style="border-bottom:1px solid var(--border-color); color:var(--text-secondary);">
+                                <th style="padding:10px;">ID</th>
+                                <th style="padding:10px;">Date</th>
+                                <th style="padding:10px;">From Wallet</th>
+                                <th style="padding:10px;">To Wallet</th>
+                                <th style="padding:10px;">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody id="txnList">
+                            <tr>
+                                <td colspan="5" style="padding:20px; text-align:center;">Loading...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+    <script src="/static/script.js"></script>
+    <script>
+        // Inline init for specific page logic if needed, or put in main script
+        document.addEventListener('DOMContentLoaded', loadTransactions);
+    </script>
+</body>
+
+</html>
