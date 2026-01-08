@@ -4,9 +4,25 @@
     {
       "src": "app/main.py",
       "use": "@vercel/python"
+    },
+    {
+      "src": "ui/**",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
+    {
+      "src": "/static/style.css",
+      "dest": "/ui/style.css"
+    },
+    {
+      "src": "/static/script.js",
+      "dest": "/ui/script.js"
+    },
+    {
+      "src": "/static/voice-assistant.js",
+      "dest": "/ui/voice-assistant.js"
+    },
     {
       "src": "/static/(.*)",
       "dest": "/ui/$1"
