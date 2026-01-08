@@ -12,6 +12,9 @@ def create_wallet(db: Session, wallet: WalletCreate):
 def get_wallet(db: Session, wallet_id: int):
     return db.query(Wallet).filter(Wallet.id == wallet_id).first()
 
+def get_wallets(db: Session, skip: int = 0, limit: int = 100):
+    return db.query(Wallet).offset(skip).limit(limit).all()
+
 def deposit_wallet(db: Session, wallet_id: int, amount: float):
     wallet = get_wallet(db, wallet_id)
     if wallet:

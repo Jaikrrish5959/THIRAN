@@ -6,18 +6,19 @@ import time
 
 def create_transfer_vulnerable(db: Session, transaction: TransactionCreate):
     """
-    VULNERABLE IMPLEMENTATION:
-    - No locking (FOR UPDATE)
-    - Race conditions possible between read and write
-    - No atomic transaction block explicitly enforcing isolation
+    SECURE IMPLEMENTATION:
+    - Uses SELECT ... FOR UPDATE to lock the sender's wallet row.
+    - Prevents race conditions by ensuring only one transaction can modify the balance at a time.
     """
     
-    # 1. READ SENDER
-    sender = db.query(Wallet).filter(Wallet.id == transaction.from_wallet_id).first()
+    # 1. READ SENDER WITH LOCK
+    # with_for_update() locks the selected rows until the transaction commits or rolls back
+    sender = db.query(Wallet).filter(Wallet.id == transaction.from_wallet_id).with_for_update().first()
     if not sender:
         raise HTTPException(status_code=404, detail="Sender wallet not found")
         
-    # 2. READ RECEIVER
+    # 2. READ RECEIVER (Locking receiver is also good practice to prevent deadlocks in reverse transfers, 
+    # but strictly for double-spend protection, locking sender is critical)
     receiver = db.query(Wallet).filter(Wallet.id == transaction.to_wallet_id).first()
     if not receiver:
         raise HTTPException(status_code=404, detail="Receiver wallet not found")
@@ -28,14 +29,6 @@ def create_transfer_vulnerable(db: Session, transaction: TransactionCreate):
 
     if sender.status != WalletStatus.ACTIVE:
          raise HTTPException(status_code=400, detail="Sender wallet inactive")
-
-    # --- RACE CONDITION WINDOW START ---
-    # In a real high-concurrency scenario, another thread could debit the sender here
-    # leading to a double spend because we used the 'sender.balance' read from Step 1.
-    
-    # Simulating a tiny delay to make race conditions easier to reproduce in testing
-    # time.sleep(0.01) 
-    # --- RACE CONDITION WINDOW END ---
 
     # 4. UPDATE BALANCES (In memory -> DB)
     sender.balance -= transaction.amount

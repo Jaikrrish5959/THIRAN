@@ -3,8 +3,14 @@ from sqlalchemy.orm import Session
 from app.database.db import get_db
 from app.schemas import wallet as wallet_schema
 from app.crud import wallet as wallet_crud
+from typing import List
 
 router = APIRouter()
+
+@router.get("/", response_model=List[wallet_schema.Wallet])
+def read_wallets(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    wallets = wallet_crud.get_wallets(db, skip=skip, limit=limit)
+    return wallets
 
 @router.post("/", response_model=wallet_schema.Wallet)
 def create_wallet(wallet: wallet_schema.WalletCreate, db: Session = Depends(get_db)):

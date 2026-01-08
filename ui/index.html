@@ -1,178 +1,102 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wallet Engine (Build Phase)</title>
-    <style>
-        body {
-            font-family: sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        section {
-            border: 1px solid #ccc;
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 5px;
-        }
-
-        h2 {
-            margin-top: 0;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 5px;
-        }
-
-        input {
-            margin-bottom: 10px;
-            padding: 5px;
-            width: 100%;
-            box-sizing: border-box;
-        }
-
-        button {
-            padding: 8px 15px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background-color: #0056b3;
-        }
-
-        pre {
-            background: #f4f4f4;
-            padding: 10px;
-            overflow-x: auto;
-        }
-
-        .error {
-            color: red;
-        }
-
-        .success {
-            color: green;
-        }
-    </style>
+    <title>Wallet Engine | Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
 </head>
-
 <body>
-    <h1>Wallet Engine Demo</h1>
+    <div id="toast-container"></div>
+    
+    <nav class="navbar">
+        <a href="/" style="text-decoration: none; color: inherit;">
+            <div class="nav-brand">
+                <div class="logo-icon">W</div>
+                <h1>Wallet Engine</h1>
+            </div>
+        </a>
+        <div class="nav-links">
+            <a href="/users">Users</a>
+            <a href="/wallets">Wallets</a>
+            <a href="/deposit">Deposit</a>
+            <a href="/transfer">Transfer</a>
+            <a href="/balance">Balance</a>
+            <a href="/docs" target="_blank">API Docs</a>
+            <button id="themeToggle" class="theme-toggle" aria-label="Toggle Theme"></button>
+        </div>
+    </nav>
 
-    <section>
-        <h2>1. Create User</h2>
-        <form id="createUserForm">
-            <label>Username: <input type="text" name="username" required></label>
-            <label>Email: <input type="email" name="email" required></label>
-            <button type="submit">Create User</button>
-        </form>
-        <div id="createUserResult"></div>
-    </section>
+    <main class="container">
+        <div class="hero-section" style="text-align:center; margin-bottom: 40px;">
+            <h2>Welcome to Wallet Engine</h2>
+            <p style="color:var(--text-secondary);">Secure, fast, and reliable transaction processing.</p>
+        </div>
 
-    <section>
-        <h2>2. Create Wallet</h2>
-        <form id="createWalletForm">
-            <label>User ID: <input type="number" name="user_id" required></label>
-            <button type="submit">Create Wallet</button>
-        </form>
-        <div id="createWalletResult"></div>
-    </section>
+        <!-- Navigation Cards Grid -->
+        <section class="grid-section" style="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+            
+            <a href="/users" class="card hover-card" style="text-decoration:none; color:inherit;">
+                <div class="card-body" style="text-align:center; padding: 30px;">
+                    <div style="font-size: 2em; margin-bottom: 10px;">👥</div>
+                    <h3>Manage Users</h3>
+                    <p style="font-size: 0.9em; color:var(--text-secondary);">Create and view users.</p>
+                </div>
+            </a>
 
-    <section>
-        <h2>3. Check Balance</h2>
-        <form id="checkBalanceForm">
-            <label>Wallet ID: <input type="number" name="wallet_id" required></label>
-            <button type="submit">Check Balance</button>
-        </form>
-        <div id="checkBalanceResult"></div>
-    </section>
+            <a href="/wallets" class="card hover-card" style="text-decoration:none; color:inherit;">
+                <div class="card-body" style="text-align:center; padding: 30px;">
+                    <div style="font-size: 2em; margin-bottom: 10px;">💳</div>
+                    <h3>Wallets</h3>
+                    <p style="font-size: 0.9em; color:var(--text-secondary);">View wallets and create new ones.</p>
+                </div>
+            </a>
 
-    <section>
-        <h2>4. Add Balance (Deposit)</h2>
-        <form id="depositForm">
-            <label>Wallet ID: <input type="number" name="wallet_id" required></label>
-            <label>Amount: <input type="number" Step="0.01" name="amount" required></label>
-            <button type="submit">Deposit</button>
-        </form>
-        <div id="depositResult"></div>
-    </section>
+            <a href="/deposit" class="card hover-card" style="text-decoration:none; color:inherit;">
+                <div class="card-body" style="text-align:center; padding: 30px;">
+                    <div style="font-size: 2em; margin-bottom: 10px;">💰</div>
+                    <h3>Deposit Funds</h3>
+                    <p style="font-size: 0.9em; color:var(--text-secondary);">Add funds to a wallet.</p>
+                </div>
+            </a>
 
-    <section>
-        <h2>5. Transfer Money</h2>
-        <form id="transferForm">
-            <label>From Wallet ID: <input type="number" name="from_wallet_id" required></label>
-            <label>To Wallet ID: <input type="number" name="to_wallet_id" required></label>
-            <label>Amount: <input type="number" Step="0.01" name="amount" required></label>
-            <button type="submit">Transfer</button>
-        </form>
-        <div id="transferResult"></div>
-    </section>
+            <a href="/transfer" class="card hover-card" style="text-decoration:none; color:inherit;">
+                <div class="card-body" style="text-align:center; padding: 30px;">
+                    <div style="font-size: 2em; margin-bottom: 10px;">💸</div>
+                    <h3>Transfer</h3>
+                    <p style="font-size: 0.9em; color:var(--text-secondary);">Send money between wallets.</p>
+                </div>
+            </a>
 
-    <script>
-        const api = async (url, method, data) => {
-            const options = {
-                method: method,
-                headers: { 'Content-Type': 'application/json' },
-            };
-            if (data) options.body = JSON.stringify(data);
-            try {
-                const response = await fetch(url, options);
-                const result = await response.json();
-                if (!response.ok) throw result;
-                return { success: true, data: result };
-            } catch (error) {
-                return { success: false, error: error };
-            }
-        };
+            <a href="/balance" class="card hover-card" style="text-decoration:none; color:inherit;">
+                <div class="card-body" style="text-align:center; padding: 30px;">
+                    <div style="font-size: 2em; margin-bottom: 10px;">⚖️</div>
+                    <h3>Check Balance</h3>
+                    <p style="font-size: 0.9em; color:var(--text-secondary);">View current wallet balance.</p>
+                </div>
+            </a>
 
-        const renderResult = (elementId, result) => {
-            const el = document.getElementById(elementId);
-            if (result.success) {
-                el.innerHTML = `<pre class="success">${JSON.stringify(result.data, null, 2)}</pre>`;
-            } else {
-                el.innerHTML = `<pre class="error">Error: ${JSON.stringify(result.error, null, 2)}</pre>`;
-            }
-        };
+        </section>
 
-        document.getElementById('createUserForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const data = Object.fromEntries(new FormData(e.target));
-            renderResult('createUserResult', await api('/users/', 'POST', data));
-        });
+        <!-- Logs -->
+        <section class="logs-section" style="margin-top: 40px;">
+            <div class="card full-width">
+                <div class="card-header">
+                    <h2>Session Activity</h2>
+                    <button onclick="document.getElementById('sessionLog').innerHTML=''" class="btn-text">Clear Logs</button>
+                </div>
+                <div class="card-body">
+                    <div id="sessionLog" class="log-container">
+                        <!-- Logs go here -->
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
 
-        document.getElementById('createWalletForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const data = Object.fromEntries(new FormData(e.target));
-            renderResult('createWalletResult', await api('/wallets/', 'POST', data));
-        });
-
-        document.getElementById('checkBalanceForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const data = Object.fromEntries(new FormData(e.target));
-            renderResult('checkBalanceResult', await api(`/wallets/${data.wallet_id}`, 'GET'));
-        });
-
-        document.getElementById('depositForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const data = Object.fromEntries(new FormData(e.target));
-            // Deposit API is POST /wallets/{id}/deposit
-            renderResult('depositResult', await api(`/wallets/${data.wallet_id}/deposit`, 'POST', { amount: parseFloat(data.amount) }));
-        });
-
-        document.getElementById('transferForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const data = Object.fromEntries(new FormData(e.target));
-            renderResult('transferResult', await api('/transfer/', 'POST', data));
-        });
-    </script>
+    <script src="/static/script.js"></script>
 </body>
-
 </html>

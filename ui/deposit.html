@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deposit | Wallet Engine</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+    <div id="toast-container"></div>
+    <nav class="navbar">
+        <a href="/" style="text-decoration: none; color: inherit;">
+            <div class="nav-brand">
+                <div class="logo-icon">W</div>
+                <h1>Wallet Engine</h1>
+            </div>
+        </a>
+        <div class="nav-links">
+            <a href="/users">Users</a>
+            <a href="/wallets">Wallets</a>
+            <a href="/deposit" class="active">Deposit</a>
+            <a href="/transfer">Transfer</a>
+            <a href="/balance">Balance</a>
+            <a href="/docs" target="_blank">API Docs</a>
+            <button id="themeToggle" class="theme-toggle" aria-label="Toggle Theme"></button>
+        </div>
+    </nav>
+    <main class="container">
+        <div class="card" style="max-width: 600px; margin: 0 auto;">
+            <div class="card-header">
+                <h3>Deposit Funds</h3>
+            </div>
+            <div class="card-body">
+                <form id="depositForm" class="stack-form">
+                    <div class="form-group">
+                        <label>Target Wallet ID</label>
+                        <input type="number" name="wallet_id" placeholder="e.g., 1" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Amount ($)</label>
+                        <input type="number" step="0.01" name="amount" placeholder="0.00" required>
+                    </div>
+                    <button type="submit" class="btn-success">Deposit</button>
+                </form>
+            </div>
+        </div>
+    </main>
+    <script src="/static/script.js"></script>
+</body>
+
+</html>

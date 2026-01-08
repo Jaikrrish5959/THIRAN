@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wallets | Wallet Engine</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+    <div id="toast-container"></div>
+    <nav class="navbar">
+        <a href="/" style="text-decoration: none; color: inherit;">
+            <div class="nav-brand">
+                <div class="logo-icon">W</div>
+                <h1>Wallet Engine</h1>
+            </div>
+        </a>
+        <div class="nav-links">
+            <a href="/users">Users</a>
+            <a href="/wallets" class="active">Wallets</a>
+            <a href="/deposit">Deposit</a>
+            <a href="/transfer">Transfer</a>
+            <a href="/balance">Balance</a>
+            <a href="/docs" target="_blank">API Docs</a>
+            <button id="themeToggle" class="theme-toggle" aria-label="Toggle Theme"></button>
+        </div>
+    </nav>
+    <main class="container">
+        <section class="grid-section">
+            <div class="card full-width">
+                <div class="card-header">
+                    <h2>All Wallets</h2>
+                    <button onclick="loadDashboard()" class="btn-text">Refresh</button>
+                </div>
+                <div class="card-body scrollable">
+                    <ul id="walletList" class="item-list">
+                        <li class="empty-state">Loading wallets...</li>
+                    </ul>
+                </div>
+                <div class="card-footer">
+                    <h3>Create New Wallet</h3>
+                    <form id="createWalletForm" class="stack-form">
+                        <select class="user-select" name="user_id" required>
+                            <option value="">Select Owner</option>
+                        </select>
+                        <button type="submit" class="btn-primary">Create Wallet</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </main>
+    <script src="/static/script.js"></script>
+</body>
+
+</html>
