@@ -14,10 +14,6 @@
 4. [Transaction Flow Diagrams](#transaction-flow-diagrams)
 5. [Concurrency Control](#concurrency-control)
 6. [Database Schema](#database-schema)
-7. [Security Architecture](#security-architecture)
-8. [AI Voice Assistant](#ai-voice-assistant)
-9. [API Documentation](#api-documentation)
-
 ---
 
 ## System Architecture
@@ -546,38 +542,6 @@ erDiagram
 
 ---
 
-## Security Architecture
-
-### Security Layers
-
-```mermaid
-graph TB
-    subgraph "Request Flow"
-        Req[Incoming API Request] --> RL[Rate Limiter]
-        RL --> Val[Input Validation<br/>Pydantic Schemas]
-        Val --> Auth[PIN Verification]
-        Auth --> Exec[Execute Operation]
-    end
-    
-    subgraph "PIN Security Flow"
-        PIN[Plain PIN<br/>"1234"] --> Hash[Bcrypt Hash Function<br/>with auto-salt]
-        Hash --> Store[(Database Storage<br/>pin_hash column)]
-        
-        VerifyReq[Verification Request] --> Fetch[Fetch Hashed PIN<br/>from database]
-        Fetch --> Compare[Constant-Time Compare<br/>bcrypt.checkpw]
-        Compare --> Result{Match?}
-        Result -->|Yes| Allow[✅ Allow Operation]
-        Result -->|No| Deny[❌ Deny Operation]
-    end
-    
-    Auth --> PIN
-    Auth --> VerifyReq
-    
-    style RL fill:#f59e0b,stroke:#d97706,color:#fff
-    style Hash fill:#ef4444,stroke:#dc2626,color:#fff
-    style Allow fill:#22c55e,stroke:#16a34a,color:#fff
-    style Deny fill:#ef4444,stroke:#dc2626,color:#fff
-```
 
 ### Security Features
 
@@ -605,89 +569,8 @@ graph TB
 
 ## AI Voice Assistant
 
-### Voice Assistant Architecture
-
-```mermaid
-graph TB
-    User[👤 User Voice Input] --> Mic[🎤 Microphone]
-    Mic --> SpeechAPI[Web Speech API<br/>Speech Recognition]
-    SpeechAPI --> Transcript[📝 Text Transcript]
-    
-    Transcript --> NLP[NLP Parser<br/>Pattern Matching]
-    NLP --> Intent[Intent Detection<br/>"transfer", "deposit", etc.]
-    Intent --> Params[Parameter Extraction<br/>Regex Patterns]
-    
-    Params --> Validate{Valid<br/>Parameters?}
-    Validate -->|No| Error[Error Message]
-    Validate -->|Yes| API[API Call<br/>Backend Endpoint]
-    
-    API --> Response[API Response]
-    Response --> Format[Format Message<br/>Mask PINs]
-    
-    Format --> TTS[Text-to-Speech<br/>Web Speech Synthesis]
-    TTS --> Speaker[🔊 Speaker Output]
-    
-    Response --> UI[UI Update<br/>Conversation Display]
-    Error --> TTS
-    
-    style SpeechAPI fill:#6366f1,stroke:#4f46e5,color:#fff
-    style API fill:#22c55e,stroke:#16a34a,color:#fff
-    style TTS fill:#f59e0b,stroke:#d97706,color:#fff
-```
-
-### Command Processing Flow
-
-```mermaid
-graph LR
-    A[Voice Command:<br/>"Transfer $50 from<br/>wallet 1 to wallet 2<br/>with PIN 1234"] --> B[Speech Recognition]
-    B --> C[Text Transcript]
-    C --> D[Intent Detection:<br/>"transfer"]
-    D --> E[Parameter Extraction]
-    E --> F[from_wallet_id: 1<br/>to_wallet_id: 2<br/>amount: 50<br/>pin: 1234]
-    F --> G[API Call:<br/>POST /api/v1/transfer/]
-    G --> H[Response:<br/>Success/Error]
-    H --> I[Format Response:<br/>Mask PIN]
-    I --> J[Speak:<br/>"Successfully transferred<br/>$50. Transaction<br/>completed securely."]
-    
-    style D fill:#6366f1,stroke:#4f46e5,color:#fff
-    style G fill:#22c55e,stroke:#16a34a,color:#fff
-    style I fill:#ef4444,stroke:#dc2626,color:#fff
-```
-
 ---
 
-## API Documentation
-
-### API Endpoint Map
-
-```mermaid
-graph TB
-    subgraph "User Management API"
-        U1[POST /api/v1/users/<br/>Create User]
-        U2[GET /api/v1/users/<br/>List Users]
-        U3[GET /api/v1/users/{id}<br/>Get User]
-    end
-    
-    subgraph "Wallet Management API"
-        W1[POST /api/v1/wallets/<br/>Create Wallet<br/>🔒 PIN Required]
-        W2[GET /api/v1/wallets/<br/>List Wallets]
-        W3[GET /api/v1/wallets/{id}<br/>Get Wallet]
-        W4[POST /api/v1/wallets/deposit<br/>Deposit Funds<br/>🔒 PIN Required]
-    end
-    
-    subgraph "Transfer API"
-        T1[POST /api/v1/transfer/<br/>Single Transfer<br/>🔒 PIN Required<br/>🔒 Row Lock]
-        T2[POST /api/v1/transfer/batch<br/>Batch Transfer<br/>🔒 PIN Required<br/>🔒 Row Lock<br/>⚛️ Atomic]
-        T3[GET /api/v1/transfer/transactions<br/>Transaction History]
-    end
-    
-    style W1 fill:#ef4444,stroke:#dc2626,color:#fff
-    style W4 fill:#ef4444,stroke:#dc2626,color:#fff
-    style T1 fill:#ef4444,stroke:#dc2626,color:#fff
-    style T2 fill:#ef4444,stroke:#dc2626,color:#fff
-```
-
----
 
 ## Summary
 
