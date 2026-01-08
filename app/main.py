@@ -1,17 +1,38 @@
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
-from app.database import models, db
-from app.api import users, wallets, transfer
 from fastapi.responses import FileResponse
+import os
 
-# Create tables
-models.Base.metadata.create_all(bind=db.engine)
-
+# Initialize FastAPI app first
 app = FastAPI(title="Wallet Engine (Build Phase)")
 
-app.include_router(users.router, prefix="/api/v1/users", tags=["users"])
-app.include_router(wallets.router, prefix="/api/v1/wallets", tags=["wallets"])
-app.include_router(transfer.router, prefix="/api/v1/transfer", tags=["transfer"])
+# Try to initialize database (optional for serverless deployment)
+try:
+    from app.database import models, db
+    from app.api import users, wallets, transfer
+    
+    # Create tables only if database is available
+    models.Base.metadata.create_all(bind=db.engine)
+    
+    # Include API routers only if database is available
+    app.include_router(users.router, prefix="/api/v1/users", tags=["users"])
+    app.include_router(wallets.router, prefix="/api/v1/wallets", tags=["wallets"])
+    app.include_router(transfer.router, prefix="/api/v1/transfer", tags=["transfer"])
+    
+    DB_AVAILABLE = True
+except Exception as e:
+    # Database not available - running in demo mode
+    DB_AVAILABLE = False
+    print(f"Warning: Database not available - running in demo mode. Error: {e}")
+
+# Health check endpoint (works without database)
+@app.get("/health")
+async def health_check():
+    return {
+        "status": "ok",
+        "database": "connected" if DB_AVAILABLE else "unavailable",
+        "mode": "production" if DB_AVAILABLE else "demo"
+    }
 
 # Serve UI
 app.mount("/static", StaticFiles(directory="ui"), name="static")
